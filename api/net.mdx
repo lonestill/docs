@@ -1,0 +1,41 @@
+---
+title: "api.Net"
+description: "Перехват fetch запросов YM"
+---
+
+Перехватывает `window.fetch`. Хуки снимаются при `stop()` автоматически.
+
+<Note>
+Для запросов во внешние API из плагинов используй [api.HTTP](/api/http). `api.Net` — для перехвата запросов, которые **YM делает сам**.
+</Note>
+
+## onRequest
+
+```js
+const stop = api.Net.onRequest(filter, ({ url, opts }) => { ... })
+```
+
+Вызывается **перед отправкой**. `filter` — подстрока URL, `null` или `''` — все запросы.
+
+## onResponse
+
+```js
+const stop = api.Net.onResponse(filter, async ({ url, status, response }) => { ... })
+```
+
+Вызывается **после ответа**. `response` — клон `Response`, читай через `.json()` или `.text()`. YM получает оригинал без изменений.
+
+## Пример
+
+```js
+BYM.register({ id: 'api-spy' }, (api) => ({
+  start() {
+    api.Net.onResponse('/api/v2.1/handlers/track', async ({ status, response }) => {
+      if (status !== 200) return;
+      const data = await response.json();
+      api.Logger.log('Track data:', data);
+    });
+  },
+  stop() {},
+}));
+```

@@ -1,1 +1,40 @@
-`api.Logger` — логгер с цветным префиксом имени плагина в консоли.
+---
+title: "api.Logger"
+description: "Логгер с цветным префиксом плагина в консоли DevTools"
+---
+
+## Методы
+
+```js
+api.Logger.log('Сообщение', data)
+api.Logger.info('Информация')
+api.Logger.warn('Предупреждение')
+api.Logger.error('Ошибка', err)
+```
+
+Соответствуют `console.log / info / warn / error`.
+
+## Вывод в консоли
+
+```
+[my-plugin] Сообщение {key: 'value'}
+[my-plugin] Предупреждение
+```
+
+Префикс `[my-plugin]` окрашен в жёлтый. `error` — в красный.
+
+Фильтр в DevTools (`F12`): введи `[my-plugin]` в строку фильтра.
+
+## Пример
+
+```js
+BYM.register({ id: 'my-plugin' }, (api) => ({
+  start() {
+    api.Logger.log('Запущен');
+    api.Logger.info('Версия 1.0.0');
+  },
+  stop() {
+    api.Logger.log('Остановлен');
+  },
+}));
+```

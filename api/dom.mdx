@@ -1,0 +1,68 @@
+---
+title: "api.DOM"
+description: "querySelector, waitFor, observe, injectCSS — с автоматической очисткой"
+---
+
+CSS и наблюдатели снимаются при `stop()` автоматически.
+
+## Поиск элементов
+
+```js
+api.DOM.query(selector, root?)     // → Element | null
+api.DOM.queryAll(selector, root?)  // → Element[]
+```
+
+## waitFor
+
+```js
+await api.DOM.waitFor(selector, timeout = 10000)  // → Element
+```
+
+Ждёт появления элемента через MutationObserver. Если уже есть — резолвится сразу. Бросает `Error` при таймауте.
+
+```js
+const bar = await api.DOM.waitFor('[class*="PlayerBarDesktop"]');
+```
+
+## observe
+
+```js
+const stop = api.DOM.observe(selector, callback, root?)
+```
+
+Вызывает `callback(el)` для каждого нового элемента. Сразу проверяет существующие. Один элемент дважды не попадёт.
+
+```js
+api.DOM.observe('[class*="TrackTitle"]', (el) => {
+  api.Logger.log('Трек:', el.textContent?.trim());
+});
+```
+
+## injectCSS / removeCSS
+
+```js
+api.DOM.injectCSS('my-style', `
+  [class*="PlayerBarDesktop"] {
+    box-shadow: 0 0 20px rgba(255, 190, 92, 0.3);
+  }
+`)
+api.DOM.removeCSS('my-style')
+```
+
+Создаёт `<style id="bym-css-{pluginId}-{cssId}">`. Повторный вызов — обновляет стиль. Удаляется при `stop()`.
+
+## Пример
+
+```js
+BYM.register({ id: 'highlight' }, (api) => ({
+  start() {
+    api.DOM.injectCSS('glow', `
+      [class*="PlayerBarDesktop"] { outline: 2px solid #ffbe5c; }
+    `);
+    api.DOM.observe('[class*="TrackTitle"]', (el) => {
+      api.Logger.log('Новый трек:', el.textContent?.trim());
+    });
+  },
+  stop() {},
+}));
+```
