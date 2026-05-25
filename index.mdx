@@ -1,0 +1,64 @@
+---
+title: "BetterYandexMusic"
+description: "Мод для Яндекс Музыки с системой плагинов"
+---
+
+BetterYandexMusic добавляет в Яндекс Музыку систему плагинов. Плагин — один `.js` файл в папке плагинов. Никакой сборки, никакого node_modules.
+
+## Установка
+
+<Steps>
+  <Step title="Скачай установщик">
+    Скачай установщик с GitHub Releases.
+  </Step>
+  <Step title="Установи мод">
+    Запусти установщик и нажми **Установить мод**.
+  </Step>
+  <Step title="Добавь плагины">
+    Кинь `.js` файлы в папку:
+    ```
+    %APPDATA%\BetterYandexMusic\plugins\
+    ```
+  </Step>
+  <Step title="Открой BYM">
+    В сайдбаре YM появится кнопка **BYM**. Горячая клавиша: `Ctrl+Shift+B`.
+  </Step>
+</Steps>
+
+## Как работает
+
+- Плагины загружаются при старте YM
+- Изменения в папке плагинов подхватываются автоматически, без перезапуска
+- Каждый плагин изолирован: свои настройки, свой Storage, свои подписки
+- При выключении плагина всё чистится автоматически — CSS, патчи, fetch-хуки, observers
+
+## Быстрый старт
+
+```js
+BYM.register({
+  id: 'hello',
+  name: 'Hello World',
+  version: '1.0.0',
+}, (api) => ({
+  start() {
+    api.UI.toast('Привет от плагина!');
+    api.Logger.log('Плагин запущен');
+  },
+  stop() {},
+}));
+```
+
+<CardGroup cols={2}>
+  <Card title="Структура плагина" icon="puzzle-piece" href="/plugin-structure">
+    BYM.register, start/stop, правила написания
+  </Card>
+  <Card title="Настройки" icon="sliders" href="/plugin-settings">
+    Объявление настроек и getSetting
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/player">
+    Полное описание всех модулей
+  </Card>
+  <Card title="Примеры" icon="book-open" href="/examples/speed-control">
+    Готовые плагины с исходным кодом
+  </Card>
+</CardGroup>

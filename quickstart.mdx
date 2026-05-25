@@ -1,0 +1,83 @@
+---
+title: "Быстрый старт"
+description: "Напиши свой первый плагин за 5 минут"
+---
+
+## Минимальный плагин
+
+Создай файл `my-plugin.js` в папке плагинов:
+
+```js
+BYM.register({
+  id: 'my-plugin',
+  name: 'Мой плагин',
+  version: '1.0.0',
+  description: 'Описание',
+  author: 'Имя',
+}, (api, getSetting) => {
+  return {
+    start() {
+      // вызывается при включении
+    },
+    stop() {
+      // вызывается при выключении
+    },
+  };
+});
+```
+
+Файл подхватится автоматически. Включить плагин можно в BYM → кликнуть на него → тогл.
+
+---
+
+## Плагин с настройками
+
+```js
+BYM.register({
+  id: 'track-logger',
+  name: 'Track Logger',
+  version: '1.0.0',
+  settings: [
+    { key: 'notify', type: 'boolean', label: 'Системное уведомление', default: true },
+    { key: 'format', type: 'select', label: 'Формат',
+      options: ['artist — title', 'title'], default: 'artist — title' },
+  ],
+}, (api, getSetting) => {
+  function onTrack(track) {
+    if (!track) return;
+    const fmt  = getSetting('format') ?? 'artist — title';
+    const text = fmt === 'title' ? track.title : `${track.artist} — ${track.title}`;
+    api.Logger.log('Новый трек:', text);
+    if (getSetting('notify') !== false) api.UI.notify(track.artist, track.title);
+  }
+
+  return {
+    start() { api.Events.on('trackChange', onTrack); },
+    stop()  { api.Events.off('trackChange', onTrack); },
+  };
+});
+```
+
+---
+
+## Все модули api
+
+| Модуль | Что делает |
+|--------|-----------|
+| `api.Player` | Скорость, громкость, позиция, next/prev/like |
+| `api.Events` | play, pause, trackChange, volumeChange, seeked... |
+| `api.Storage` | Постоянное хранилище ключ-значение |
+| `api.UI` | toast, системные уведомления, confirm диалог |
+| `api.HTTP` | HTTP запросы без CORS (через main процесс) |
+| `api.Hotkeys` | Глобальные горячие клавиши |
+| `api.Clipboard` | Буфер обмена |
+| `api.Patcher` | Monkey-patching любых функций |
+| `api.DOM` | querySelector, waitFor, observe, injectCSS |
+| `api.Net` | Перехват fetch запросов YM |
+| `api.React` | Доступ к React Fiber дереву |
+| `api.Webpack` | Поиск webpack модулей YM |
+| `api.Logger` | Логгер с цветным префиксом плагина |
+
+<Note>
+`getSetting(key)` возвращает `null` если пользователь не сохранял настройку. Всегда используй `?? defaultValue`.
+</Note>

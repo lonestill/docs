@@ -1,0 +1,64 @@
+---
+title: "Last.fm Scrobbler"
+description: "Отправка треков на Last.fm через api.HTTP"
+---
+
+Отправляет каждый сыгранный трек на Last.fm. Скробблинг происходит через 30 секунд после начала воспроизведения.
+
+```js
+BYM.register({
+  id: 'lastfm-scrobbler',
+  name: 'Last.fm Scrobbler',
+  version: '1.0.0',
+  settings: [
+    { key: 'apiKey',     type: 'string', label: 'API Key',     default: '' },
+    { key: 'sessionKey', type: 'string', label: 'Session Key', default: '' },
+  ],
+}, (api, getSetting) => {
+  let scrobbleTimer = null;
+
+  async function scrobble(track) {
+    const apiKey     = getSetting('apiKey')     ?? '';
+    const sessionKey = getSetting('sessionKey') ?? '';
+    if (!apiKey || !sessionKey) return;
+
+    const dur = api.Player.getDuration();
+    if (dur < 30) return;
+
+    const params = new URLSearchParams({
+      method:    'track.scrobble',
+      artist:    track.artist,
+      track:     track.title,
+      album:     track.album || '',
+      timestamp: Math.floor(Date.now() / 1000),
+      api_key:   apiKey,
+      sk:        sessionKey,
+      format:    'json',
+    });
+
+    const res = await api.HTTP.post(
+      'https://ws.audioscrobbler.com/2.0/',
+      params.toString(),
+      { 'Content-Type': 'application/x-www-form-urlencoded' }
+    );
+
+    if (res.ok) api.Logger.log('Scrobble:', track.artist, '—', track.title);
+    else        api.Logger.warn('Scrobble error:', res.status, res.data);
+  }
+
+  function onTrack(track) {
+    clearTimeout(scrobbleTimer);
+    if (!track) return;
+    scrobbleTimer = setTimeout(() => {
+      if (api.Player.isPlaying()) scrobble(track);
+    }, 30_000);
+  }
+
+  return {
+    start()  { api.Events.on('trackChange', onTrack); },
+    stop()   { clearTimeout(scrobbleTimer); api.Events.off('trackChange', onTrack); },
+  };
+});
+```
+
+**API:** `api.Events`, `api.HTTP`, `api.Player`, `api.Logger`, settings

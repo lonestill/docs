@@ -1,0 +1,88 @@
+---
+title: "Структура плагина"
+description: "BYM.register, start/stop, правила написания плагинов"
+---
+
+## BYM.register(meta, factory)
+
+```js
+BYM.register(meta, factory)
+```
+
+Единственная точка входа. Вызывается один раз при загрузке файла.
+
+### meta
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `id` | `string` | Уникальный идентификатор **(обязательно)** |
+| `name` | `string` | Название в UI |
+| `version` | `string` | Версия |
+| `description` | `string` | Описание |
+| `author` | `string` | Автор |
+| `settings` | `array` | Настройки плагина (см. [Настройки](/plugin-settings)) |
+
+### factory(api, getSetting)
+
+Функция, которую BYM вызывает один раз при загрузке. Возвращает объект с `start` и `stop`.
+
+- `api` — все модули BYM
+- `getSetting(key)` — читает настройку по ключу, возвращает `null` если не сохранена
+
+---
+
+## start() и stop()
+
+`start()` — вызывается когда плагин включается или при старте YM если плагин был включён.
+
+`stop()` — вызывается при выключении, перезагрузке или закрытии YM.
+
+---
+
+## Что чистится автоматически
+
+| Что | Как зарегистрировано |
+|-----|----------------------|
+| Все патчи | `api.Patcher.before/after/instead` |
+| Все стили | `api.DOM.injectCSS` |
+| Все observers | `api.DOM.observe` |
+| Все fetch-хуки | `api.Net.onRequest/onResponse` |
+| Все горячие клавиши | `api.Hotkeys.register` |
+
+<Warning>
+`api.Events.on` **не снимается автоматически**. Снимай через `api.Events.off` в `stop()`.
+</Warning>
+
+---
+
+## Правила
+
+### Не используй глобальные переменные
+
+```js
+// ✗ плохо — myInterval живёт между перезагрузками плагина
+let myInterval;
+BYM.register({ id: 'bad' }, (api) => ({
+  start() { myInterval = setInterval(...); },
+  stop()  { clearInterval(myInterval); },
+}));
+
+// ✓ хорошо — переменная в замыкании factory
+BYM.register({ id: 'good' }, (api) => {
+  let myInterval;
+  return {
+    start() { myInterval = setInterval(...); },
+    stop()  { clearInterval(myInterval); },
+  };
+});
+```
+
+### Всегда проверяй null у getSetting
+
+```js
+// ✗ упадёт если настройка null
+const step = getSetting('step') * 2;
+
+// ✓ правильно
+const step = (getSetting('step') ?? 0.1) * 2;
+```

@@ -1,0 +1,68 @@
+---
+title: "Hotkey Controls"
+description: "Глобальные горячие клавиши для управления плеером"
+---
+
+Глобальные хоткеи для скорости, навигации и копирования трека. Работают когда YM свёрнут.
+
+```js
+BYM.register({
+  id: 'hotkey-controls',
+  name: 'Hotkey Controls',
+  version: '1.0.0',
+  settings: [
+    { key: 'speedUp',    type: 'string',  label: 'Скорость +',      default: 'Alt+Up' },
+    { key: 'speedDown',  type: 'string',  label: 'Скорость -',      default: 'Alt+Down' },
+    { key: 'speedReset', type: 'string',  label: 'Сброс скорости',  default: 'Alt+R' },
+    { key: 'next',       type: 'string',  label: 'Следующий трек',  default: 'Alt+Right' },
+    { key: 'prev',       type: 'string',  label: 'Предыдущий трек', default: 'Alt+Left' },
+    { key: 'copy',       type: 'string',  label: 'Копировать трек', default: 'Ctrl+Shift+C' },
+    { key: 'notify',     type: 'boolean', label: 'Уведомление при смене трека', default: true },
+  ],
+}, (api, getSetting) => {
+  function onTrack(track) {
+    if (track && getSetting('notify') !== false) {
+      api.UI.notify(track.artist, track.title);
+    }
+  }
+
+  return {
+    start() {
+      api.Hotkeys.register(getSetting('speedUp') ?? 'Alt+Up', () => {
+        const v = Math.min(4, parseFloat((api.Player.getSpeed() + 0.1).toFixed(2)));
+        api.Player.setSpeed(v);
+        api.UI.toast(v.toFixed(2) + '×', 600);
+      });
+
+      api.Hotkeys.register(getSetting('speedDown') ?? 'Alt+Down', () => {
+        const v = Math.max(0.25, parseFloat((api.Player.getSpeed() - 0.1).toFixed(2)));
+        api.Player.setSpeed(v);
+        api.UI.toast(v.toFixed(2) + '×', 600);
+      });
+
+      api.Hotkeys.register(getSetting('speedReset') ?? 'Alt+R', () => {
+        api.Player.resetSpeed();
+        api.UI.toast('1.00×', 600);
+      });
+
+      api.Hotkeys.register(getSetting('next') ?? 'Alt+Right', () => api.Player.next());
+      api.Hotkeys.register(getSetting('prev') ?? 'Alt+Left',  () => api.Player.prev());
+
+      api.Hotkeys.register(getSetting('copy') ?? 'Ctrl+Shift+C', async () => {
+        const track = api.Player.getTrack();
+        if (!track) return;
+        await api.Clipboard.write(`${track.artist} — ${track.title}`);
+        api.UI.toast('Скопировано', 1000);
+      });
+
+      api.Events.on('trackChange', onTrack);
+    },
+
+    stop() {
+      api.Events.off('trackChange', onTrack);
+    },
+  };
+});
+```
+
+**API:** `api.Hotkeys`, `api.Player`, `api.UI`, `api.Clipboard`, `api.Events`, settings
