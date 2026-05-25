@@ -1,0 +1,46 @@
+---
+title: "Название трека в заголовке"
+description: "Показывать текущий трек в заголовке окна YM"
+---
+
+Плагин обновляет `document.title`, чтобы в панели задач было видно, что играет.
+
+```js
+BYM.register({
+  id: 'now-playing-title',
+  name: 'Now Playing Title',
+  version: '1.0.0',
+  description: 'Название трека в заголовке окна',
+  settings: [
+    { key: 'format', type: 'select', label: 'Формат',
+      options: ['artist — title', 'title — artist', 'title'], default: 'artist — title' },
+  ],
+}, (api, getSetting) => {
+  const original = document.title;
+
+  function format(track) {
+    const fmt = getSetting('format') ?? 'artist — title';
+    if (fmt === 'title') return track.title;
+    if (fmt === 'title — artist') return `${track.title} — ${track.artist}`;
+    return `${track.artist} — ${track.title}`;
+  }
+
+  function onTrack(track) {
+    if (track) document.title = format(track);
+  }
+
+  return {
+    start() {
+      api.Events.on('trackChange', onTrack);
+      const track = api.Player.getCurrentTrack();
+      if (track) onTrack(track);
+    },
+    stop() {
+      api.Events.off('trackChange', onTrack);
+      document.title = original;
+    },
+  };
+});
+```
+
+**Что используется:** [`api.Events`](/api/events), [`api.Player`](/api/player), [настройки](/plugin-settings).

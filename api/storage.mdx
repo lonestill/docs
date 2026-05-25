@@ -1,0 +1,39 @@
+---
+title: "api.Storage"
+description: "Постоянное хранилище ключ-значение, изолированное на плагин"
+---
+
+`api.Storage` — простое хранилище ключ-значение. Данные изолированы: каждый плагин видит только свои ключи и сохраняются между запусками YM.
+
+## Методы
+
+| Метод | Описание |
+|-------|----------|
+| `get(key)` | Получить значение по ключу |
+| `set(key, value)` | Сохранить значение |
+| `remove(key)` | Удалить ключ |
+| `clear()` | Очистить все ключи плагина |
+
+## Пример
+
+```js
+BYM.register({
+  id: 'play-counter',
+  name: 'Play Counter',
+  version: '1.0.0',
+}, (api) => {
+  function onTrack() {
+    const count = (api.Storage.get('count') ?? 0) + 1;
+    api.Storage.set('count', count);
+    api.Logger.log('всего треков прослушано:', count);
+  }
+  return {
+    start() { api.Events.on('trackChange', onTrack); },
+    stop()  { api.Events.off('trackChange', onTrack); },
+  };
+});
+```
+
+<Note>
+Для пользовательских настроек используй поле `settings` в `BYM.register` — см. [Настройки](/plugin-settings). `api.Storage` нужен для произвольных данных: кешей, счётчиков, токенов.
+</Note>

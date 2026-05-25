@@ -1,0 +1,48 @@
+---
+title: "Last.fm скробблер"
+description: "Отправка прослушанных треков в Last.fm через api.HTTP"
+---
+
+Плагин-скробблер: отправляет каждый прослушанный трек в Last.fm. Токен хранится в настройках плагина.
+
+```js
+BYM.register({
+  id: 'lastfm-scrobbler',
+  name: 'Last.fm Scrobbler',
+  version: '1.0.0',
+  description: 'Отправляет прослушанные треки в Last.fm',
+  settings: [
+    { key: 'sessionKey', type: 'string', label: 'Session key', default: '' },
+  ],
+}, (api, getSetting) => {
+  async function scrobble(track) {
+    const key = getSetting('sessionKey');
+    if (!key || !track) return;
+
+    const res = await api.HTTP.post('https://ws.audioscrobbler.com/2.0/', {
+      method: 'track.scrobble',
+      artist: track.artist,
+      track:  track.title,
+      timestamp: Math.floor(Date.now() / 1000),
+      sk: key,
+    });
+
+    if (res.status >= 200 && res.status < 300) {
+      api.Logger.log('scrobbled:', track.artist, '—', track.title);
+    } else {
+      api.Logger.warn('scrobble failed:', res.status);
+    }
+  }
+
+  return {
+    start() { api.Events.on('trackChange', scrobble); },
+    stop()  { api.Events.off('trackChange', scrobble); },
+  };
+});
+```
+
+<Note>
+Чтобы получить session key, пройди [процедуру авторизации Last.fm](https://www.last.fm/api/authentication). Запиши его в поле настройки **Session key** в карточке плагина.
+</Note>
+
+**Что используется:** [`api.HTTP`](/api/http), [`api.Events`](/api/events), [`api.Logger`](/api/logger), [настройки](/plugin-settings).

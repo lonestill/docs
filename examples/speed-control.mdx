@@ -1,0 +1,41 @@
+---
+title: "Управление скоростью"
+description: "Плагин с настройкой и горячими клавишами для регулировки скорости"
+---
+
+Плагин, который меняет скорость воспроизведения по горячим клавишам и сохраняет последнее значение.
+
+```js
+BYM.register({
+  id: 'speed-control',
+  name: 'Speed Control',
+  version: '1.0.0',
+  description: 'Скорость воспроизведения по горячим клавишам',
+  settings: [
+    { key: 'step', type: 'number', label: 'Шаг', default: 0.1, min: 0.05, max: 0.5, step: 0.05 },
+  ],
+}, (api, getSetting) => {
+  function change(delta) {
+    const current = api.Storage.get('speed') ?? 1;
+    const next = Math.max(0.5, Math.min(2, current + delta));
+    api.Player.setSpeed(next);
+    api.Storage.set('speed', next);
+    api.UI.toast(`Скорость: ${next.toFixed(2)}x`);
+  }
+
+  return {
+    start() {
+      api.Player.setSpeed(api.Storage.get('speed') ?? 1);
+      api.Hotkeys.register('Ctrl+Shift+Equal', () => change(getSetting('step') ?? 0.1));
+      api.Hotkeys.register('Ctrl+Shift+Minus', () => change(-(getSetting('step') ?? 0.1)));
+    },
+    stop() {
+      api.Hotkeys.unregister('Ctrl+Shift+Equal');
+      api.Hotkeys.unregister('Ctrl+Shift+Minus');
+      api.Player.setSpeed(1);
+    },
+  };
+});
+```
+
+**Что используется:** [`api.Player`](/api/player), [`api.Hotkeys`](/api/hotkeys), [`api.Storage`](/api/storage), [`api.UI`](/api/ui), [настройки](/plugin-settings).

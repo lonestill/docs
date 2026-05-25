@@ -1,0 +1,37 @@
+---
+title: "api.Patcher"
+description: "Monkey-patching: before / after / instead для любых функций"
+---
+
+`api.Patcher` — патчинг чужих функций. Можно встроиться **до**, **после** или **вместо** оригинального вызова. Все патчи плагина снимаются автоматически в `stop`.
+
+## Методы
+
+| Метод | Описание |
+|-------|----------|
+| `before(target, key, fn)` | Вызвать `fn` перед оригиналом |
+| `after(target, key, fn)` | Вызвать `fn` после оригинала, получает результат |
+| `instead(target, key, fn)` | Полностью заменить оригинал |
+
+`fn` получает `(args, originalFn)` для `before` / `instead` и `(args, result, originalFn)` для `after`.
+
+## Пример
+
+```js
+BYM.register({
+  id: 'log-fetch',
+  name: 'Log fetch',
+  version: '1.0.0',
+}, (api) => ({
+  start() {
+    api.Patcher.before(window, 'fetch', (args) => {
+      api.Logger.log('fetch →', args[0]);
+    });
+  },
+  stop() {},
+}));
+```
+
+<Note>
+Патчи автоматически снимаются при выключении плагина — вручную их откатывать не нужно. Для перехвата сетевых запросов YM удобнее использовать [`api.Net`](/api/net).
+</Note>

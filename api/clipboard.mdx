@@ -1,0 +1,32 @@
+---
+title: "api.Clipboard"
+description: "Чтение и запись системного буфера обмена"
+---
+
+`api.Clipboard` — работа с системным буфером обмена.
+
+## Методы
+
+| Метод | Описание |
+|-------|----------|
+| `read()` | Прочитать текст из буфера |
+| `write(text)` | Записать текст в буфер |
+
+## Пример
+
+```js
+BYM.register({
+  id: 'copy-track',
+  name: 'Copy Track',
+  version: '1.0.0',
+}, (api) => {
+  function onTrack(track) {
+    api.Clipboard.write(`${track.artist} — ${track.title}`);
+    api.UI.toast('Скопировано в буфер');
+  }
+  return {
+    start() { api.Events.on('trackChange', onTrack); },
+    stop()  { api.Events.off('trackChange', onTrack); },
+  };
+});
+```

@@ -1,0 +1,38 @@
+---
+title: "Глобальные горячие клавиши"
+description: "Управление YM с клавиатуры, когда окно не в фокусе"
+---
+
+Плагин, который добавляет глобальные горячие клавиши для управления воспроизведением.
+
+```js
+BYM.register({
+  id: 'hotkey-controls',
+  name: 'Hotkey Controls',
+  version: '1.0.0',
+  description: 'Управление YM глобальными клавишами',
+}, (api) => {
+  const bindings = {
+    'Ctrl+Alt+Space':     () => api.Player.play(),
+    'Ctrl+Alt+ArrowRight': () => api.Player.next(),
+    'Ctrl+Alt+ArrowLeft':  () => api.Player.prev(),
+    'Ctrl+Alt+L':         () => api.Player.like(),
+  };
+
+  return {
+    start() {
+      for (const [combo, fn] of Object.entries(bindings)) {
+        api.Hotkeys.register(combo, fn);
+      }
+      api.UI.toast('Hotkeys активны');
+    },
+    stop() {
+      for (const combo of Object.keys(bindings)) {
+        api.Hotkeys.unregister(combo);
+      }
+    },
+  };
+});
+```
+
+**Что используется:** [`api.Hotkeys`](/api/hotkeys), [`api.Player`](/api/player), [`api.UI`](/api/ui).

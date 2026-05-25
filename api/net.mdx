@@ -1,0 +1,41 @@
+---
+title: "api.Net"
+description: "Перехват fetch-запросов Яндекс Музыки"
+---
+
+`api.Net` — перехват сетевых запросов самого YM. Удобно для чтения метаданных треков, плейлистов и других ответов API YM, которые иначе достать сложно.
+
+## Методы
+
+| Метод | Описание |
+|-------|----------|
+| `onRequest(pattern, handler)` | Хук на исходящий запрос |
+| `onResponse(pattern, handler)` | Хук на ответ |
+
+`pattern` — строка (подстрока URL) или регулярное выражение. `handler` для `onResponse` получает `(response, request)`.
+
+## Пример
+
+```js
+BYM.register({
+  id: 'sniff-tracks',
+  name: 'Sniff Tracks',
+  version: '1.0.0',
+}, (api) => ({
+  start() {
+    api.Net.onResponse(/\/handlers\/track/, async (res) => {
+      const data = await res.clone().json();
+      api.Logger.log('track payload:', data);
+    });
+  },
+  stop() {},
+}));
+```
+
+<Warning>
+Не модифицируй сами запросы YM, если не знаешь, что делаешь — можно сломать воспроизведение.
+</Warning>
+
+<Tip>
+Для собственных HTTP-запросов (не от YM) используй [`api.HTTP`](/api/http).
+</Tip>

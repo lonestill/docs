@@ -1,0 +1,54 @@
+---
+title: "Настройки"
+description: "Объявление настроек плагина и чтение значений через getSetting"
+---
+
+Плагин может объявить настройки в поле `settings`. BYM сам отрисует UI в карточке плагина и сохранит значения между запусками YM.
+
+## Объявление
+
+```js
+BYM.register({
+  id: 'demo',
+  name: 'Demo',
+  version: '1.0.0',
+  settings: [
+    { key: 'enabled', type: 'boolean', label: 'Включить', default: true },
+    { key: 'speed',   type: 'number',  label: 'Скорость', default: 1, min: 0.5, max: 2, step: 0.1 },
+    { key: 'mode',    type: 'select',  label: 'Режим', options: ['a', 'b'], default: 'a' },
+    { key: 'token',   type: 'string',  label: 'API токен', default: '' },
+  ],
+}, (api, getSetting) => ({ start() {}, stop() {} }));
+```
+
+## Типы настроек
+
+| `type` | UI | Поля |
+|--------|-----|------|
+| `boolean` | переключатель | `key`, `label`, `default` |
+| `number` | числовое поле / слайдер | `key`, `label`, `default`, `min`, `max`, `step` |
+| `string` | текстовое поле | `key`, `label`, `default` |
+| `select` | выпадающий список | `key`, `label`, `options`, `default` |
+
+Общие поля для всех типов:
+
+- `key` — идентификатор настройки (используется в `getSetting`)
+- `label` — подпись в UI
+- `default` — значение по умолчанию
+
+## Чтение значения
+
+`getSetting(key)` возвращает текущее значение или `null`, если пользователь не сохранял настройку.
+
+```js
+const speed = getSetting('speed') ?? 1;
+const mode  = getSetting('mode')  ?? 'a';
+```
+
+<Warning>
+`getSetting` возвращает `null` для несохранённых значений, а не `undefined`. Всегда используй `?? defaultValue` — даже если у настройки есть `default` в объявлении.
+</Warning>
+
+## Где хранятся значения
+
+Настройки сохраняются автоматически. Произвольные данные плагина (кеши, состояние) храни через [`api.Storage`](/api/storage).
