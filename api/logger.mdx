@@ -1,1 +1,34 @@
-`api.Logger` — логгер с цветным префиксом имени плагина в консоли.
+---
+title: "api.Logger"
+description: "Логгер с цветным префиксом имени плагина в DevTools"
+---
+
+`api.Logger` — обёртка над `console`, которая добавляет цветной префикс с именем плагина. Используй его вместо `console.log`, чтобы свои сообщения было легко найти в DevTools.
+
+## Методы
+
+| Метод | Уровень |
+|-------|---------|
+| `log(...args)` | info |
+| `warn(...args)` | warning |
+| `error(...args)` | error |
+| `debug(...args)` | debug |
+
+## Пример
+
+```js
+BYM.register({
+  id: 'demo',
+  name: 'Demo',
+  version: '1.0.0',
+}, (api) => ({
+  start() {
+    api.Logger.log('запущен');
+    api.Logger.warn('что-то странное');
+    api.Logger.error('всё плохо');
+  },
+  stop() {},
+}));
+```
+
+В DevTools сообщение выглядит как `[Demo] запущен` с цветом, уникальным для плагина.

@@ -1,0 +1,45 @@
+---
+title: "api.Events"
+description: "События плеера: play, pause, trackChange, volumeChange, seeked"
+---
+
+`api.Events` — подписка на события плеера. Используй `on` для подписки и `off` для отписки.
+
+## Методы
+
+| Метод | Описание |
+|-------|----------|
+| `on(event, handler)` | Подписаться на событие |
+| `off(event, handler)` | Отписаться |
+
+## События
+
+| Событие | Аргумент | Когда срабатывает |
+|---------|----------|-------------------|
+| `play` | — | Воспроизведение запущено |
+| `pause` | — | Поставлено на паузу |
+| `trackChange` | `track` | Сменился трек |
+| `volumeChange` | `value` | Изменена громкость |
+| `seeked` | `position` | Перемотка завершена |
+
+## Пример
+
+```js
+BYM.register({
+  id: 'track-log',
+  name: 'Track Log',
+  version: '1.0.0',
+}, (api) => {
+  function onTrack(track) {
+    api.Logger.log('now playing:', track.artist, '—', track.title);
+  }
+  return {
+    start() { api.Events.on('trackChange', onTrack); },
+    stop()  { api.Events.off('trackChange', onTrack); },
+  };
+});
+```
+
+<Warning>
+Подписки на события **не очищаются автоматически**. Всегда отписывайся в `stop`, иначе после перезагрузки плагина старый обработчик продолжит работать.
+</Warning>

@@ -1,0 +1,44 @@
+---
+title: "api.DOM"
+description: "querySelector, waitFor, observe и инъекция CSS"
+---
+
+`api.DOM` — работа с DOM YM. Включает ожидание появления элементов, наблюдение за изменениями и вставку CSS.
+
+## Методы
+
+| Метод | Описание |
+|-------|----------|
+| `query(selector)` | Аналог `document.querySelector` |
+| `queryAll(selector)` | Аналог `document.querySelectorAll` |
+| `waitFor(selector, options?)` | Ждать появления элемента, возвращает `Promise` |
+| `observe(target, callback)` | MutationObserver с авто-очисткой в `stop` |
+| `injectCSS(css)` | Вставить CSS, авто-удаляется в `stop` |
+
+## Пример: инъекция CSS
+
+```js
+BYM.register({
+  id: 'red-title',
+  name: 'Red Title',
+  version: '1.0.0',
+}, (api) => ({
+  start() {
+    api.DOM.injectCSS(`
+      .track-title { color: red !important; }
+    `);
+  },
+  stop() {},
+}));
+```
+
+## Пример: ожидание элемента
+
+```js
+const player = await api.DOM.waitFor('.player-controls', { timeout: 5000 });
+player.style.opacity = '0.8';
+```
+
+<Note>
+CSS, observers и таймеры `waitFor` снимаются автоматически при выключении плагина.
+</Note>

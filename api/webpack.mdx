@@ -1,0 +1,34 @@
+---
+title: "api.Webpack"
+description: "Поиск внутренних webpack-модулей Яндекс Музыки"
+---
+
+`api.Webpack` — поиск webpack-модулей YM. Используется для патчинга или чтения внутренних утилит, которые не торчат наружу.
+
+## Методы
+
+| Метод | Описание |
+|-------|----------|
+| `find(filter)` | Найти один модуль по предикату |
+| `findAll(filter)` | Найти все модули по предикату |
+| `findByProps(...props)` | Найти модуль, у которого есть все указанные свойства |
+
+## Пример
+
+```js
+BYM.register({
+  id: 'find-store',
+  name: 'Find Store',
+  version: '1.0.0',
+}, (api) => ({
+  start() {
+    const store = api.Webpack.findByProps('dispatch', 'getState');
+    api.Logger.log('store:', store);
+  },
+  stop() {},
+}));
+```
+
+<Warning>
+Имена и форма модулей меняются с каждым релизом YM. Это низкоуровневый API — используй только, если другие модули `api.*` не подходят.
+</Warning>

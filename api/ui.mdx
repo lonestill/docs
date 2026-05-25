@@ -1,0 +1,44 @@
+---
+title: "api.UI"
+description: "Тосты, системные уведомления и confirm диалог"
+---
+
+`api.UI` — взаимодействие с пользователем: тосты, системные уведомления и подтверждения.
+
+## Методы
+
+| Метод | Описание |
+|-------|----------|
+| `toast(message)` | Короткий тост поверх UI YM |
+| `notify(title, body)` | Системное уведомление ОС |
+| `confirm(message)` | Диалог подтверждения, возвращает `Promise<boolean>` |
+
+## Пример
+
+```js
+BYM.register({
+  id: 'announcer',
+  name: 'Announcer',
+  version: '1.0.0',
+}, (api) => {
+  function onTrack(track) {
+    api.UI.notify(track.artist, track.title);
+  }
+  return {
+    start() {
+      api.UI.toast('Announcer запущен');
+      api.Events.on('trackChange', onTrack);
+    },
+    stop() {
+      api.Events.off('trackChange', onTrack);
+    },
+  };
+});
+```
+
+## Confirm
+
+```js
+const ok = await api.UI.confirm('Очистить кеш?');
+if (ok) api.Storage.clear();
+```

@@ -1,0 +1,34 @@
+---
+title: "api.React"
+description: "Доступ к React Fiber дереву Яндекс Музыки"
+---
+
+`api.React` — низкоуровневый доступ к React Fiber YM. Нужен редко: когда данные о текущем треке, плейлисте или UI-состоянии недоступны через `api.Player` / `api.Events`.
+
+## Методы
+
+| Метод | Описание |
+|-------|----------|
+| `getFiber(element)` | Fiber-узел для DOM-элемента |
+| `getProps(element)` | Пропсы React-компонента для элемента |
+| `getState(element)` | Состояние компонента |
+
+## Пример
+
+```js
+BYM.register({
+  id: 'dump-props',
+  name: 'Dump Props',
+  version: '1.0.0',
+}, (api) => ({
+  async start() {
+    const el = await api.DOM.waitFor('.player-controls');
+    api.Logger.log('props:', api.React.getProps(el));
+  },
+  stop() {},
+}));
+```
+
+<Warning>
+React Fiber — внутренний API React. Структура меняется между версиями YM. Используй как fallback, не как основной способ работы.
+</Warning>

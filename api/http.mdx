@@ -1,0 +1,39 @@
+---
+title: "api.HTTP"
+description: "HTTP запросы без ограничений CORS через main процесс"
+---
+
+`api.HTTP` — HTTP-запросы из плагина. Идут через main процесс Electron, поэтому **CORS не применяется** — можно ходить на любые домены.
+
+## Методы
+
+| Метод | Описание |
+|-------|----------|
+| `get(url, options?)` | GET-запрос |
+| `post(url, body, options?)` | POST-запрос |
+| `request(options)` | Произвольный запрос |
+
+`options` поддерживает `headers`, `query`, `timeout`. Ответ — объект с полями `status`, `headers`, `body` и `json()`.
+
+## Пример
+
+```js
+BYM.register({
+  id: 'weather',
+  name: 'Weather',
+  version: '1.0.0',
+}, (api) => ({
+  async start() {
+    const res = await api.HTTP.get('https://api.example.com/weather', {
+      query: { city: 'Moscow' },
+    });
+    const data = await res.json();
+    api.UI.toast(`Погода: ${data.temp}°`);
+  },
+  stop() {},
+}));
+```
+
+<Tip>
+Если нужно перехватывать сетевые запросы самого YM, а не делать свои — используй [`api.Net`](/api/net).
+</Tip>

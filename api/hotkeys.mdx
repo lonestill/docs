@@ -1,0 +1,38 @@
+---
+title: "api.Hotkeys"
+description: "Глобальные горячие клавиши, которые работают вне фокуса YM"
+---
+
+`api.Hotkeys` — регистрация **глобальных** горячих клавиш. Срабатывают, даже когда окно YM не в фокусе.
+
+## Методы
+
+| Метод | Описание |
+|-------|----------|
+| `register(combo, handler)` | Зарегистрировать сочетание |
+| `unregister(combo)` | Отменить регистрацию |
+
+`combo` — строка вида `'Ctrl+Shift+P'`, `'MediaPlayPause'`, `'Alt+ArrowRight'`.
+
+## Пример
+
+```js
+BYM.register({
+  id: 'global-controls',
+  name: 'Global Controls',
+  version: '1.0.0',
+}, (api) => ({
+  start() {
+    api.Hotkeys.register('Ctrl+Shift+ArrowRight', () => api.Player.next());
+    api.Hotkeys.register('Ctrl+Shift+ArrowLeft',  () => api.Player.prev());
+  },
+  stop() {
+    api.Hotkeys.unregister('Ctrl+Shift+ArrowRight');
+    api.Hotkeys.unregister('Ctrl+Shift+ArrowLeft');
+  },
+}));
+```
+
+<Warning>
+Если сочетание занято другим приложением или плагином, регистрация может молча провалиться. Выбирай редкие комбинации.
+</Warning>
