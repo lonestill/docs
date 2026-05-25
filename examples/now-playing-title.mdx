@@ -1,0 +1,76 @@
+---
+title: "Заголовок окна с треком"
+description: "Подменяет заголовок окна YM на исполнителя и название текущего трека"
+---
+
+Слушает `trackChange` и пишет имя трека в `document.title`. При выключении возвращает оригинальный заголовок.
+
+## Что показывает
+
+- Подписка на `trackChange` через `api.Events`
+- Чтение `track.title` / `track.artist` из `api.Player.getTrack()`
+- Настройка формата строки через `type: 'select'`
+- Восстановление состояния в `stop()`
+
+## Код
+
+```js now-playing-title.js
+BYM.register({
+  id: 'now-playing-title',
+  name: 'Now Playing Title',
+  version: '1.0.0',
+  description: 'Показывает текущий трек в заголовке окна',
+  author: 'you',
+  settings: [
+    {
+      key: 'format',
+      type: 'select',
+      label: 'Формат',
+      options: ['artist — title', 'title — artist', 'title'],
+      default: 'artist — title',
+    },
+    {
+      key: 'prefix',
+      type: 'string',
+      label: 'Префикс',
+      default: '🎵 ',
+    },
+  ],
+}, (api, getSetting) => {
+  const originalTitle = document.title;
+
+  function format(track) {
+    if (!track) return originalTitle;
+    const fmt = getSetting('format') ?? 'artist — title';
+    const prefix = getSetting('prefix') ?? '';
+    if (fmt === 'title') return prefix + track.title;
+    if (fmt === 'title — artist') return prefix + `${track.title} — ${track.artist}`;
+    return prefix + `${track.artist} — ${track.title}`;
+  }
+
+  function onTrack(track) {
+    document.title = format(track);
+  }
+
+  return {
+    start() {
+      onTrack(api.Player.getTrack());
+      api.Events.on('trackChange', onTrack);
+    },
+    stop() {
+      api.Events.off('trackChange', onTrack);
+      document.title = originalTitle;
+    },
+  };
+});
+```
+
+## Как использовать
+
+1. Сохрани код в `now-playing-title.js` в папке плагинов.
+2. Включи плагин и выбери формат в настройках.
+3. Заголовок окна обновляется при каждой смене трека.
+
+<Note>
+`trackChange` срабатывает с задержкой до 500 мс — BYM полингует `navigator.mediaSession.metadata`. См. [api.Events](/api/events).
+</Note>

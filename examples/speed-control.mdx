@@ -1,0 +1,69 @@
+---
+title: "Управление скоростью"
+description: "Плагин для запуска YM с фиксированной скоростью и индикацией изменений"
+---
+
+Устанавливает скорость воспроизведения при старте, показывает toast при каждом изменении и сбрасывает скорость в `stop()`.
+
+## Что показывает
+
+- `api.Player.setSpeed` / `resetSpeed` — управление скоростью с фоновым enforcer
+- `getSetting(key) ?? default` — безопасное чтение настроек
+- Подписка на `speedChange` и ручное снятие в `stop()`
+
+## Код
+
+```js speed-control.js
+BYM.register({
+  id: 'speed-control',
+  name: 'Speed Control',
+  version: '1.0.0',
+  description: 'Устанавливает скорость воспроизведения при старте',
+  author: 'you',
+  settings: [
+    {
+      key: 'speed',
+      type: 'number',
+      label: 'Скорость при старте',
+      default: 1.5,
+      min: 0.25,
+      max: 4,
+      step: 0.05,
+    },
+    {
+      key: 'showToast',
+      type: 'boolean',
+      label: 'Показывать toast при смене',
+      default: true,
+    },
+  ],
+}, (api, getSetting) => {
+  function onSpeed(value) {
+    if (getSetting('showToast') !== false) {
+      api.UI.toast(value.toFixed(2) + '×', 800);
+    }
+  }
+
+  return {
+    start() {
+      const speed = getSetting('speed') ?? 1.5;
+      api.Player.setSpeed(speed);
+      api.Events.on('speedChange', onSpeed);
+    },
+    stop() {
+      api.Events.off('speedChange', onSpeed);
+      api.Player.resetSpeed();
+    },
+  };
+});
+```
+
+## Как использовать
+
+1. Сохрани код в `speed-control.js` в папке плагинов BYM.
+2. Перезагрузи YM — плагин появится в списке.
+3. Открой настройки и задай нужную скорость.
+
+<Note>
+`setSpeed` запускает фоновый таймер, который восстанавливает скорость при смене трека. Подробнее — [api.Player](/api/player).
+</Note>

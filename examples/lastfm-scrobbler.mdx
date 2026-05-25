@@ -1,0 +1,113 @@
+---
+title: "Last.fm скробблер"
+description: "Отправляет прослушанные треки в Last.fm через api.HTTP без CORS"
+---
+
+Слушает `trackChange`, ждёт пока трек проиграет половину или 4 минуты, затем шлёт scrobble в Last.fm API. Использует `api.HTTP` — запросы идут через main процесс Electron, без CORS.
+
+## Что показывает
+
+- Отправка запросов на внешнее API через `api.HTTP.post`
+- Хранение токена сессии в `api.Storage`
+- Логирование через `api.Logger`
+- Комбинирование `api.Player.getPosition` с таймером
+
+<Warning>
+Получение `session_key` через `auth.getSession` и подпись запросов MD5 — отдельная задача авторизации, она не входит в этот пример. Здесь предполагается, что ключ уже сохранён в `api.Storage`.
+</Warning>
+
+## Код
+
+```js lastfm-scrobbler.js
+const ENDPOINT = 'https://ws.audioscrobbler.com/2.0/';
+
+BYM.register({
+  id: 'lastfm-scrobbler',
+  name: 'Last.fm Scrobbler',
+  version: '1.0.0',
+  description: 'Отправляет прослушанные треки в Last.fm',
+  author: 'you',
+  settings: [
+    { key: 'apiKey',     type: 'string',  label: 'API key',     default: '' },
+    { key: 'apiSecret',  type: 'string',  label: 'API secret',  default: '' },
+    { key: 'minSeconds', type: 'number',  label: 'Минимум секунд до scrobble',
+      default: 30, min: 10, max: 240, step: 5 },
+    { key: 'nowPlaying', type: 'boolean', label: 'Слать updateNowPlaying', default: true },
+  ],
+}, (api, getSetting) => {
+  let current = null;
+  let timer  = null;
+
+  async function call(method, params) {
+    const sk = api.Storage.get('sessionKey');
+    if (!sk) {
+      api.Logger.warn('Нет session key, scrobble пропущен');
+      return;
+    }
+    const body = new URLSearchParams({
+      method,
+      api_key: getSetting('apiKey') ?? '',
+      sk,
+      format: 'json',
+      ...params,
+    }).toString();
+
+    const res = await api.HTTP.post(ENDPOINT, body, {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    if (!res.ok) api.Logger.warn(method, 'failed:', res.status, res.data);
+    return res;
+  }
+
+  function schedule(track) {
+    const duration = api.Player.getDuration() || 0;
+    const min = getSetting('minSeconds') ?? 30;
+    const delay = Math.max(min, Math.min(duration / 2, 240)) * 1000;
+
+    timer = setTimeout(() => {
+      call('track.scrobble', {
+        artist: track.artist,
+        track: track.title,
+        album: track.album,
+        timestamp: Math.floor(Date.now() / 1000),
+      });
+      api.Logger.log('Scrobbled:', track.artist, '—', track.title);
+    }, delay);
+  }
+
+  function onTrack(track) {
+    clearTimeout(timer);
+    timer = null;
+    current = track;
+    if (!track) return;
+
+    if (getSetting('nowPlaying') !== false) {
+      call('track.updateNowPlaying', { artist: track.artist, track: track.title });
+    }
+    schedule(track);
+  }
+
+  return {
+    start() {
+      api.Events.on('trackChange', onTrack);
+      onTrack(api.Player.getTrack());
+    },
+    stop() {
+      api.Events.off('trackChange', onTrack);
+      clearTimeout(timer);
+      timer = null;
+      current = null;
+    },
+  };
+});
+```
+
+## Как использовать
+
+1. Зарегистрируй приложение на [Last.fm API](https://www.last.fm/api/account/create) и получи `apiKey` / `apiSecret`.
+2. Авторизуйся через `auth.getSession` и сохрани результат: `api.Storage.set('sessionKey', '...')`.
+3. Сохрани код в `lastfm-scrobbler.js`, заполни ключи в настройках и включи плагин.
+
+<Note>
+`api.HTTP` обходит CORS — все запросы выполняются в main процессе Electron. Подробнее — [api.HTTP](/api/http).
+</Note>
