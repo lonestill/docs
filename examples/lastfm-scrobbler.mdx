@@ -1,0 +1,13 @@
+---
+title: "Last.fm Scrobbler"
+description: "Отправка треков на Last.fm через api.HTTP"
+---
+
+Отправляет каждый сыгранный трек на Last.fm. Демонстрирует использование `api.HTTP` и `api.Events.trackChange`.
+
+Для работы нужен Session Key — получить через [Last.fm Auth](https://www.last.fm/api/authentication).
+
+```js
+BYM.register({
+  id: 'lastfm-scrobbler',
+  name: 'Last.fm Scrobbler'
