@@ -11,97 +11,76 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Документация",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Начало работы",
             "pages": [
               "index",
-              "quickstart",
-              "development"
-            ]
+              "quickstart"
+            ],
+            "icon": "rocket"
           },
           {
-            "group": "Customization",
+            "group": "Разработка плагинов",
+            "icon": "puzzle-piece",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/components",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "Agent ready",
-            "pages": [
-              "agent-ready/prompt",
-              "agent-ready/visibility",
-              "agent-ready/contextual",
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "plugin-structure",
+              "plugin-settings"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Модули",
+            "icon": "code",
             "pages": [
-              "api-reference/introduction"
+              "api/player",
+              "api/events",
+              "api/storage",
+              "api/ui",
+              "api/http",
+              "api/hotkeys",
+              "api/clipboard",
+              "api/patcher",
+              "api/dom",
+              "api/net",
+              "api/react",
+              "api/logger",
+              "api/webpack"
             ]
-          },
+          }
+        ]
+      },
+      {
+        "tab": "Примеры",
+        "groups": [
           {
-            "group": "Endpoint examples",
+            "group": "Примеры плагинов",
+            "icon": "book-open",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "examples/speed-control",
+              "examples/hotkey-controls",
+              "examples/now-playing-title",
+              "examples/lastfm-scrobbler"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
+    ]
   },
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "GitHub",
+      "href": "https://github.com/lonestill/bym"
     }
   },
   "contextual": {
@@ -118,9 +97,7 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/lonestill/bym"
     }
   }
 }
